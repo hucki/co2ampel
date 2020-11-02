@@ -31,6 +31,12 @@
     </div>
     <div id="updated-stemberg" class="updated"></div>
   </div>
+  <div class="card">
+    400 ppm entspricht Frischluft!
+    <div class="okcolor">0-999 ppm -> Ok!</div>
+    <div class="warncolor">1000-1999 ppm -> <b>Bitte lüften</b></div>
+    <div class="alertcolor">über 2000 ppm -> <b>Jetzt aber wirklich lüften</b></div>
+  </div>
 
   <!-- <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194242/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Arnsberg&type=line&yaxis=CO2+%28ppm%29"></iframe>
   <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194245/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Neheim&type=line&yaxis=CO2+%28ppm%29"></iframe> -->
@@ -75,7 +81,9 @@
               warnElement.innerText = `${state[item].co2 >= 1000 ? 'Bitte lüften!' : ''}`
               const updatedAt = new Date(state[item].updated_at);
               const updElement = document.getElementById((`updated-${state[item].name}`));
-              updElement.innerHTML =  `last update: ${updatedAt.getDate()}.${updatedAt.getMonth()+1}.${updatedAt.getFullYear()} <b>${updatedAt.getHours()}:${updatedAt.getMinutes()}</b>`;
+              const dateStr = `${updatedAt.getDate().toString().padStart(2,'0')}.${(updatedAt.getMonth()+1).toString().padStart(2,'0')}.${updatedAt.getFullYear()}`
+              const timeStr = `${updatedAt.getHours()}:${updatedAt.getMinutes().toString().padStart(2,'0')}`
+              updElement.innerHTML =  `last update: ${dateStr} <b>${timeStr}</b>`;
             }));
       })
     }
