@@ -1,0 +1,42 @@
+* {
+  padding: 0;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.heading {
+  text-align: center;
+}
+.box {
+  padding: 5px;
+  border-radius: 15px;
+  width: 150px;
+  height: 150px;
+  text-align: center;
+  background-color: aquamarine;
+  box-shadow: 5px 5px 15px #3333;
+}
+.temp {
+  background-color: aquamarine;
+}
+.okcolor {
+  color: black;
+  background-color: darkseagreen;
+}
+.warncolor {
+  color: black;
+  background-color: darkkhaki;
+}
+.alertcolor {
+  color: white;
+  background-color: darkred;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 15px;
+  padding: 10px;
+  border: 0px;
+  border-radius: 3px;
+  box-shadow: 5px 5px 15px #3333;
+}
