@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mundwerk Logopädische Praxis - CO2 Ampel</title>
+</head>
+<body>
+  <div class="temperatures">
+    <div id="tempNeumarkt">Lade Temperatur</div>
+    <div id="tempStemberg">Lade Temperatur</div>
+  </div>
+  <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194242/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Arnsberg&type=line&yaxis=CO2+%28ppm%29"></iframe>
+  <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194245/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Neheim&type=line&yaxis=CO2+%28ppm%29"></iframe>
+  <script>
+    let state = {
+      1194242: {
+        name: 'Neumarkt',
+        temp: 0,
+        isLoading: true,
+        updated_at: null
+      },
+      1194245: {
+        name: 'Stemberg',
+        temp: 0,
+        isLoading: true,
+        updated_at: null
+      }
+    }
+    const getData = () => {
+      Object.keys(state).forEach(item => {
+        fetch(`https://api.thingspeak.com/channels/${item}/feeds.json?results=2`)
+          .then(res => res.json()
+            .then(resParsed => {
+              //console.log(resParsed.feeds[1])
+              state[item].temp = resParsed.feeds[1].field2;
+              state[item].isLoading = false;
+              state[item].updated_at = resParsed.feeds[1].created_at;
+              const tempElement = document.getElementById(`temp${state[item].name}`)
+              tempElement.innerHTML = `Temperatur ${state[item].name}: <b>${state[item].temp} °C</b>`
+              //console.log(state);
+            }));
+      })
+    }
+    getData()
+    setInterval(getData, 15000);
+  </script>
+</body>
+</html>
