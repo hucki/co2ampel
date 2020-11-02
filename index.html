@@ -3,41 +3,101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="http://bernii.github.io/gauge.js/dist/gauge.min.js"></script>
   <title>Mundwerk Logopädische Praxis - CO2 Ampel</title>
 </head>
 <body>
   <div class="temperatures">
-    <div id="tempNeumarkt">Lade Temperatur</div>
-    <div id="tempStemberg">Lade Temperatur</div>
+    <div id="temp-neumarkt">Lade Temperatur</div>
+    <div id="temp-stemberg">Lade Temperatur</div>
   </div>
+  <div class="co2container">
+    <canvas id="co2-neumarkt"></canvas>
+    <canvas id="co2-stemberg"></canvas>
+  </div>
+  <canvas id="foo" width="200" height="100"></canvas>
   <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194242/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Arnsberg&type=line&yaxis=CO2+%28ppm%29"></iframe>
   <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194245/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Neheim&type=line&yaxis=CO2+%28ppm%29"></iframe>
   <script>
     let state = {
       1194242: {
-        name: 'Neumarkt',
+        name: 'neumarkt',
         temp: 0,
+        co2: 0,
         isLoading: true,
-        updated_at: null
+        updated_at: null,
+        feeds: []
       },
       1194245: {
-        name: 'Stemberg',
+        name: 'stemberg',
         temp: 0,
+        co2: 0,
         isLoading: true,
-        updated_at: null
+        updated_at: null,
+        feeds: []
       }
     }
+    const opts = {
+      angle: -0.2, // The span of the gauge arc
+      lineWidth: 0.2, // The line thickness
+      radiusScale: 1, // Relative radius
+      pointer: {
+        length: 0.6, // // Relative to gauge radius
+        strokeWidth: 0.035, // The thickness
+        color: '#000000' // Fill color
+      },
+      staticZones: [
+        {strokeStyle: "#30B32D", min: 0, max: 1000}, // Green
+        {strokeStyle: "#FFDD00", min: 1000, max: 2000}, // Yellow
+        {strokeStyle: "#F03E3E", min: 2000, max: 3000}  // Red
+      ],
+      staticLabels: {
+        font: "10px sans-serif",  // Specifies font
+        labels: [400, 1000, 2000],  // Print labels at these values
+        color: "#000000",  // Optional: Label text color
+        fractionDigits: 0  // Optional: Numerical precision. 0=round off.
+      },
+      renderTicks: {
+          divisions: 5,
+          divWidth: 1.1,
+          divLength: 0.7,
+          divColor: '#333333',
+          subDivisions: 3,
+          subLength: 0.5,
+          subWidth: 0.6,
+          subColor: '#666666'
+        },
+      limitMax: false,     // If false, max value increases automatically if value > maxValue
+      limitMin: false,     // If true, the min value of the gauge will be fixed
+      colorStart: '#6FADCF',   // Colors
+      colorStop: '#8FC0DA',    // just experiment with them
+      strokeColor: '#E0E0E0',  // to see which ones work best for you
+      generateGradient: true,
+      highDpiSupport: true,     // High resolution support
+
+    };
+
     const getData = () => {
       Object.keys(state).forEach(item => {
-        fetch(`https://api.thingspeak.com/channels/${item}/feeds.json?results=2`)
+        fetch(`https://api.thingspeak.com/channels/${item}/feeds.json?results=30`)
           .then(res => res.json()
             .then(resParsed => {
               //console.log(resParsed.feeds[1])
-              state[item].temp = resParsed.feeds[1].field2;
+              const feedLength = resParsed.feeds.length
+              state[item].co2 = resParsed.feeds[feedLength-1].field1;
+              state[item].temp = resParsed.feeds[feedLength-1].field2;
               state[item].isLoading = false;
               state[item].updated_at = resParsed.feeds[1].created_at;
-              const tempElement = document.getElementById(`temp${state[item].name}`)
+              state[item].feeds = resParsed.feeds;
+              console.log(state[item].feeds);
+              const tempElement = document.getElementById(`temp-${state[item].name}`)
               tempElement.innerHTML = `Temperatur ${state[item].name}: <b>${state[item].temp} °C</b>`
+              const target = document.getElementById(`co2-${state[item].name}`); // your canvas element
+              const gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+              gauge.maxValue = 3000; // set max gauge value
+              gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+              gauge.animationSpeed = 32; // set animation speed (32 is default value)
+              gauge.set(state[item].co2); // set actual value
               //console.log(state);
             }));
       })
