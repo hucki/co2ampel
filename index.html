@@ -7,21 +7,33 @@
   <title>Mundwerk Logopädische Praxis - CO2 Ampel</title>
 </head>
 <body>
+  <img src="https://www.mundwerk-arnsberg.de/wp-content/uploads/2016/01/logo-1.png" class="logo">
+  <h1>CO2 Ampeln</h1>
   <div class="card">
-    <h1 class="heading">Neumarkt</h1>
-    <div id="temp-neumarkt" class="box temp">Lade Temperatur</div>
-    <canvas id="co2-neumarkt"></canvas>
-    <div id="co2-neumarkt-value"></div>
+    <h2 class="heading">Wartezimmer Arnsberg</h2>
+    <h3 class="warning warncolor" id="warning-neumarkt"></h3>
+    <div class="boxes">
+      <div id="temp-neumarkt" class="box temp">Lade Temperatur</div>
+      <a href="https://thingspeak.com/channels/1194242/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Arnsberg&type=line&yaxis=CO2+%28ppm%29">
+        <div id="co2-neumarkt-value" class="box co2"></div>
+      </a>
+    </div>
+    <div id="updated-neumarkt" class="updated"></div>
   </div>
   <div class="card">
-    <h1 class="heading">Stembergstraße</h1>
-    <div id="temp-stemberg" class="box temp">Lade Temperatur</div>
-    <canvas id="co2-stemberg"></canvas>
-    <div id="co2-stemberg-value" class="box co2"></div>
+    <h2 class="heading">Wartezimmer Neheim</h2>
+    <h3 class="warning" id="warning-stemberg"></h3>
+    <div class="boxes">
+      <div id="temp-stemberg" class="box temp">Lade Temperatur</div>
+      <a href="https://thingspeak.com/channels/1194245/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Neheim&type=line&yaxis=CO2+%28ppm%29">
+        <div id="co2-stemberg-value" class="box co2"></div>
+      </a>
+    </div>
+    <div id="updated-stemberg" class="updated"></div>
   </div>
-  <canvas id="foo" width="200" height="100"></canvas>
-  <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194242/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Arnsberg&type=line&yaxis=CO2+%28ppm%29"></iframe>
-  <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194245/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Neheim&type=line&yaxis=CO2+%28ppm%29"></iframe>
+
+  <!-- <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194242/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Arnsberg&type=line&yaxis=CO2+%28ppm%29"></iframe>
+  <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/1194245/charts/1?bgcolor=%23eeeeee&color=%23ff9000&days=1&dynamic=true&results=30&title=CO2+-+Wartezimmer+-+Neheim&type=line&yaxis=CO2+%28ppm%29"></iframe> -->
   <script>
     let state = {
       1194242: {
@@ -48,19 +60,22 @@
         fetch(`https://api.thingspeak.com/channels/${item}/feeds.json?results=30`)
           .then(res => res.json()
             .then(resParsed => {
-              //console.log(resParsed.feeds[1])
               const feedLength = resParsed.feeds.length
               state[item].co2 = resParsed.feeds[feedLength-1].field1;
               state[item].temp = resParsed.feeds[feedLength-1].field2;
               state[item].isLoading = false;
               state[item].updated_at = resParsed.feeds[feedLength-1].created_at;
               state[item].feeds = resParsed.feeds;
-              console.log(state[item].feeds);
-              const tempElement = document.getElementById(`temp-${state[item].name}`)
-              tempElement.innerHTML = `🌡 ${state[item].temp} °C`
-              const co2Element = document.getElementById(`co2-${state[item].name}-value`)
-              co2Element.innerHTML = `<h2>${state[item].co2} ppm</h2> (${state[item].updated_at})`
-              //console.log(state);
+              const tempElement = document.getElementById(`temp-${state[item].name}`);
+              tempElement.innerHTML = `<h3>🌡 ${state[item].temp} °C</h3>`;
+              const co2Element = document.getElementById(`co2-${state[item].name}-value`);
+              co2Element.setAttribute('class', `box co2 ${state[item].co2 >= 2000 ? 'alertcolor' : state[item].co2 >= 1000 ? 'warncolor' : 'okcolor'}`)
+              co2Element.innerHTML = `<h3>${state[item].co2} ppm</h3>`;
+              const warnElement = document.getElementById(`warning-${state[item].name}`);
+              warnElement.innerText = `${state[item].co2 >= 1000 ? 'Bitte lüften!' : ''}`
+              const updatedAt = new Date(state[item].updated_at);
+              const updElement = document.getElementById((`updated-${state[item].name}`));
+              updElement.innerHTML =  `last update: ${updatedAt.getDate()}.${updatedAt.getMonth()+1}.${updatedAt.getFullYear()} <b>${updatedAt.getHours()}:${updatedAt.getMinutes()}</b>`;
             }));
       })
     }
